@@ -1,0 +1,9 @@
+reports/
+backups/
+artifacts/
+*.zip
+*.tar.gz
+*.tmp
+.DS_Store
+.vscode/
+.idea/
