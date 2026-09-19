@@ -1,0 +1,84 @@
+name: OpsPilot CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  bash-linux:
+    name: Bash / Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+      - name: Validate Bash syntax
+        run: |
+          bash -n bash/opspilot.sh
+          bash -n tests/bash/test_opspilot.sh
+      - name: ShellCheck
+        run: shellcheck bash/opspilot.sh tests/bash/test_opspilot.sh
+      - name: Run Bash tests
+        run: bash tests/bash/test_opspilot.sh
+
+  powershell-linux:
+    name: PowerShell / Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install PowerShell test tooling
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -MinimumVersion 5.6.1 -Force -Scope CurrentUser
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+      - name: Analyze PowerShell
+        shell: pwsh
+        run: |
+          $issues = @(Invoke-ScriptAnalyzer -Path powershell -Recurse -Severity Error)
+          if ($issues.Count -gt 0) {
+              $issues | Format-Table -AutoSize
+              throw "PSScriptAnalyzer found errors."
+          }
+      - name: Validate module manifest
+        shell: pwsh
+        run: Test-ModuleManifest -Path powershell/OpsPilot.psd1 -ErrorAction Stop
+      - name: Run Pester
+        shell: pwsh
+        run: Invoke-Pester -Path tests/powershell -CI
+
+  powershell-windows:
+    name: PowerShell / Windows
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install PowerShell test tooling
+        shell: pwsh
+        run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module Pester -MinimumVersion 5.6.1 -Force -Scope CurrentUser
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+      - name: Analyze PowerShell
+        shell: pwsh
+        run: |
+          $issues = @(Invoke-ScriptAnalyzer -Path powershell -Recurse -Severity Error)
+          if ($issues.Count -gt 0) {
+              $issues | Format-Table -AutoSize
+              throw "PSScriptAnalyzer found errors."
+          }
+      - name: Validate module manifest
+        shell: pwsh
+        run: Test-ModuleManifest -Path powershell/OpsPilot.psd1 -ErrorAction Stop
+      - name: Run Pester
+        shell: pwsh
+        run: Invoke-Pester -Path tests/powershell -CI
