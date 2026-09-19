@@ -1,0 +1,7 @@
+2026-09-19T08:00:00Z INFO api Application started
+2026-09-19T08:01:02Z WARNING api Response time exceeded 1200ms
+2026-09-19T08:02:15Z ERROR api Database connection failed
+2026-09-19T08:03:04Z INFO worker Retry scheduled
+2026-09-19T08:04:47Z CRITICAL worker Queue processor unavailable
+2026-09-19T08:05:11Z INFO api Request completed
+2026-09-19T08:06:20Z exception api Unhandled request exception
